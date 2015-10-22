@@ -1,7 +1,7 @@
 # uva-r
 Resources, installation instructions, and examples prepared for the University of Virginia McIntire School of Commerce R Seminar
 
-####Installation Instructions
+##Installation Instructions
 The following software is recommended to fully enjoy the seminar:
 
 * R version 3.2.0 (or later) (2015-08-14) -- "Fire Safety"
@@ -9,42 +9,43 @@ The following software is recommended to fully enjoy the seminar:
 * Visualization Packages (optional)
 
 
-#####Linux
+###Linux
+#####Base-R
 Install using your built-in package manager (apt-get, yum, zypper, etc.)
 
 	sudo apt-get update
     sudo apt-get install r-base		
 
-RStudio
+#####RStudio
 
 * Download the R-Studio binary file built for your system [here](https://www.rstudio.com/products/rstudio/download/)
 * Run the installer 
 
-#####Mac
-Base-R
+###Mac
+#####Base-R
 
 * Download the 64-bit .dmg installer for Mavericks [here](http://cran.us.r-project.org/bin/macosx/R-3.2.2.pkg) and Snow Leopard [here](http://cran.us.r-project.org/bin/macosx/R-3.2.1-snowleopard.pkg)
 * Run the .dmg installer
 * Drag the RStudio application in the Applications folder
 
-RStudio
+#####RStudio
 
 * Download the 64-bit Mac R-Studio .dmg file [here](https://www.rstudio.com/products/rstudio/download/)
 * Run the .dmg installer
 * Drag the RStudio application in the Applications folder
 
-#####Windows 
-Base-R
+###Windows 
+#####Base-R
 
 * Download the 32/64-bit .exe installer from CRAN [here](http://cran.us.r-project.org/bin/windows/base/R-3.2.2-win.exe)
 * Run the .exe installer
 
-RStudio 
+#####RStudio 
 
 * Download the Windows installer [here](https://download1.rstudio.org/RStudio-0.99.486.exe)
 * Run the .exe installer
 
-#####Confirm installation
+###Confirm installation
 You have a few options based on your operating system: 
 
 * Linux/Mac - Open a terminal session and type 'r'
@@ -89,7 +90,7 @@ Packages in library ‘/Library/Frameworks/R.framework/Versions/3.2/Resources/li
 	.						.
 	utils                   The R Utils Package
 
-#####Install optional packages
+###Install optional packages
 
 	> install.packages("ggplot2")   
 	> install.packages("randomForest")   
@@ -106,10 +107,10 @@ You can show more information about a specific package by invoking the help on a
 
 	> library(help = "package_name")
 
-####Clone GitHub Repository
+##Clone GitHub Repository
 	git clone https://github.com/mydpy/uva-r.git
 
-####Run Examples
+##Run Examples
 
 	cd uva-r 
 	R -i > sample_input
