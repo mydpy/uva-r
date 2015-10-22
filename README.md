@@ -1,6 +1,10 @@
 # uva-r
 Resources, installation instructions, and examples prepared for the University of Virginia McIntire School of Commerce R Seminar
 
+##Clone GitHub Repository
+	git clone https://github.com/mydpy/uva-r.git
+If you do not have git, you can download the repository as a .zip file from the right-hand navigation panel. 
+
 ##Installation Instructions
 The following software is recommended to fully enjoy the seminar:
 
@@ -106,9 +110,6 @@ You can confirm the packages installed correctly by invoking the system library 
 You can show more information about a specific package by invoking the help on a given package:
 
 	> library(help = "package_name")
-
-##Clone GitHub Repository
-	git clone https://github.com/mydpy/uva-r.git
 
 ##Run Examples
 
