@@ -101,6 +101,7 @@ Packages in library ‘/Library/Frameworks/R.framework/Versions/3.2/Resources/li
 	> install.packages("MASS")
 	> install.packages("ipred")
 	> install.packages("e1071")
+	> install.package("packrat")
 
 Select a mirror (a place to download the file from) and you should see log messages dumped to your screen. 
 You can confirm the packages installed correctly by invoking the system library again. 
