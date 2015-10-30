@@ -3,105 +3,103 @@
 #      R Predictive Modeling
 #    
 #  Predictive Modeling Techniques: 
+#      Loading an external dataset
 #      Building a decision tree
-#      Vector     (1-dimensional array)
-#      Vector     (1-dimensional array)
+#      Visualizing a decision tree
+#      Evaluating a decision tree
 #      Random-forest models
 #      Advanced visualization libraries
 #    
 ####################################################
-#  Basic Structures 
+#  Loading an external data set  
 #
-#  Vectors
-#      Create vectors using one of 4 methods
-#      :, c(), seq(), rep()
+#  Load a csv file using the csv function
+#   
 
-x=-7:7                     # a vector from [a,b]
-c(-7:-1,0:7)               # c() combines a list of elements  
-seq(-7,7,1)                # seq() creates a sequence [a,b] by c
-rep(c(-7:-1,0:7),each=1)   # repeats each combination once
+csv.wine.quality = read.csv("resources/WineQuality-White.csv")
+raw.wine.quality = read.csv("resources/WineQuality-White.csv"
+                            , header = TRUE
+                            , sep = ","
+                            , quote = '"'
+                            , strip.white = TRUE) 
+all.equal( csv.wine.quality
+          ,raw.wine.quality)      # show loading works each time
+str(raw.wine.quality)             # examine dataset
+summary(raw.wine.quality)
+names(raw.wine.quality)
+class(raw.wine.quality)
 
-x                          # display x
-x[1:7]                     # display elements a:b of x
-x[c(7,1,7,1)]              # elements 7, 1, 7, and 1 again
-x[c(6, 3, 6, 1)]           # elements 6, 3, 6, and 1 
-x[-1:-7]                   # exclude elements 1:7
-
-x+7                        # add to each element
-x*2                        # multiply each element
-x^2                        # power function each element
-(x+7)*2                    # combine operations using PEMDAS precedence 
-
+####################################################
+#  Building a decision tree  
 #
-#  Matrices [i,j]
-#      i - row number
-#      j - column number
-#      matrices are stored column-wise by default
+#  Load a csv file using the csv function
+#   
 
-matrix((-7:7)[-8], nrow = 2, ncol = 7)               # a 2 x 7 matrix
-matrix((-7:7)[-8], nrow = 2, ncol = 7, byrow=TRUE)   # data populated by row
 
-m = rbind(-7:-1, 1:7)                                # row-bind pastes vectors as rows
-m                                                    # print entire matrix
-m[1,] ; m[,1]                                        # print first row, then first column
-m[-1,]; m[,-1]                                       # exclude first row/column
+set.seed(1234)
+ind <- sample(2, nrow(iris), replace=TRUE, prob=c(0.7, 0.3))
+trainData <- iris[ind==1,]
+testData <- iris[ind==2,]
 
-m[-1,] = 8                                           # assign to 8 all but first row
+library(party)
+myFormula <- Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width
+iris_ctree <- ctree(myFormula, data=trainData)
+table(predict(iris_ctree), trainData$Species)
+print(iris_ctree)
+plot(iris_ctree)
+plot(iris_ctree, type="simple")
 
-#  Arrays [x1,x2,...,xn]
-#      an array is an n-dimensional generalization of a matrix 
+testPred <- predict(iris_ctree, newdata = testData)
+table(testPred, testData$Species)
 
-a = array(-7:7, dim = c(3, 5, 2))    # 3 x 5 x 2 array of with repeated values
-a
-a[1,,1]                              # list array contents like a vector or matrix
+#using RPart
+set.seed(1234)
+ind <- sample(2, nrow(bodyfat), replace=TRUE, prob=c(0.7, 0.3))
+bodyfat.train <- bodyfat[ind==1,]
+bodyfat.test <- bodyfat[ind==2,]
+# train a decision tree 
+library(rpart)
+myFormula <- DEXfat ~ age + waistcirc + hipcirc + elbowbreadth + kneebreadth
+bodyfat_rpart <- rpart(myFormula, data = bodyfat.train,control = rpart.control(minsplit = 10))
+attributes(bodyfat_rpart)
+print(bodyfat_rpart$cptable)
+print(bodyfat_rpart)
+plot(bodyfat_rpart)
+text(bodyfat_rpart, use.n=T)
+opt <- which.min(bodyfat_rpart$cptable[,"xerror"])
+cp <- bodyfat_rpart$cptable[opt, "CP"]
+bodyfat_prune <- prune(bodyfat_rpart, cp = cp)
+print(bodyfat_prune)
+plot(bodyfat_prune)
+text(bodyfat_prune, use.n=T)
 
-#  Advanced Structures 
+DEXfat_pred <- predict(bodyfat_prune, newdata=bodyfat.test)
+xlim <- range(bodyfat$DEXfat)
+plot(DEXfat_pred ~ DEXfat, data=bodyfat.test, xlab="Observed", ylab="Predicted", ylim=xlim, xlim=xlim)
+abline(a=0, b=1)
+
+
+#  Section Name 
 #
-#  Lists
-#      a list is an ordered collection of objects known as "components"
-#      most flexible object type in R
-#      syntax:  list(name1 = object1, name2 = object2, ...)
+#  Topic 1
+#      Information
+#   
 
-list1 = list(pi, x=-7:7, title="Oh, the Places You'll Go!", 
-             TRUE, matrix(0, 2, 2))
-list1                # display list1
-list1[[2]]           # display the second component of the list 
-list1[[2]][7]        # display the seventh element of the second component 
-list1$x              # display the component named x
+ind <- sample(2, nrow(iris), replace=TRUE, prob=c(0.7, 0.3))
+trainData <- iris[ind==1,]
+testData <- iris[ind==2,]
+library(randomForest)
+rf <- randomForest(Species ~ ., data=trainData, ntree=100, proximity=TRUE)
+table(predict(rf), trainData$Species)
+print(rf)
+attributes(rf)
+plot(rf)
+importance(rf)
+varImpPlot(rf)
+irisPred <- predict(rf, newdata=testData)
+table(irisPred, testData$Species)
+plot(margin(rf, testData$Species))
 
-names(list1)         # print component names of list1
-length(list1)        # number of componenets in list1
 
-#  Data Frames 
-#
-#      combines the best of matrices and lists
-#      columns can have different data types (integers and chars)
-#      usually labeled with schema (think like a .csv file or a database)
-#      syntax:  data.frame(col1, col2, ... , row.names = NULL, ...)
 
-#      data source: https://collegescorecard.ed.gov
-name=c("College of William & Mary", "University of Virginia", "Massachusetts Institute of Technology", "Standford")
-state=c("VA", "VA", "MA", "CA")
-city=c("Williamsburg","Charlottesville", "Cambridge","Stanford")
-annual.tuition=c(24377,17149,15713,21816)
-graduation.rate=c(.90, .93, .95, .93)
-salary.after.graduating=c(56400,58600,80900,91600)
-
-universities = data.frame(name, state, city, annual.tuition,graduation.rate,salary.after.graduating) 
-universities                        # display university data from collegescorecard.ed.gov
-
-nrow(universities)                  # number of universities
-ncol(universities)                  # number of variables 
-head(universities, n=2)             # display header
-str(universities)                   # display structure of d
-summary(universities)               # display summary of d
-universities[1, 1]                  # print universities
-universities[2, ]                   # print UVA data
-universities[[3]]                   # print cities 
-universities[["city"]]              # print cities
-universities[ , 3]                  # print cities
-universities$city                   # print cities
-
-mean(c(universities[2, "graduation.rate"],d[1, "graduation.rate"]))
-universities[universities$state == "VA", ]    
 
