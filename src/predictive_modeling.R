@@ -8,7 +8,6 @@
 #      Visualizing a decision tree
 #      Evaluating a decision tree
 #      Random-forest models
-#      Advanced visualization libraries
 #    
 ####################################################
 #  Loading an external data set  
@@ -40,12 +39,83 @@ ind = base::sample(2                    # sample data set
                     , replace=TRUE      # sample with replacement or not
                     , prob=c(0.7, 0.3)) # ratio of train/test
 
-wine.train = iris[ind==1,]              # create training data set
-wine.test  = iris[ind==2,]              # create testing  data set
+wine.train = raw.wine.quality[ind==1,]  # create training data set
+wine.test  = raw.wine.quality[ind==2,]  # create testing  data set
+
+####################################################
+#  configure environment
+#  
+e.tree = new.env()
 
 ####################################################
 #  Building a decision tree  
 #  
+
+library(party)
+setClass(Class="BinaryTreeModel",
+         representation(
+           tree.model="BinaryTree",
+           tree.results="factor",
+           tree.formula="formula",
+           tree.predict="factor"
+         )
+)
+
+build_tree = function(tree.formula, tree.train, tree.test, env=e){
+    .model = party::ctree(tree.formula, data=tree.train)
+    .formula = tree.formula
+    .results = predict(.model, data = tree.train)
+    .predict = predict(.model, newdata = tree.test)
+    return (new( "BinaryTreeModel",
+                 tree.model=.model,
+                 tree.results=.results,
+                 tree.formula=.formula,
+                 tree.predict=.predict))
+}
+
+quality.formula.full = quality ~ fixed.acidity + volatile.acidity + 
+                       citric.acid + residual.sugar + chlorides + 
+                       free.sulfur.dioxide + total.sulfur.dioxide + 
+                       density + pH + sulphates + alcohol
+
+quality.formula.small = quality ~ alcohol
+
+wine.model.small <<- build_tree(quality.formula.small, wine.train, wine.test, e.tree)
+wine.model.full <<-  build_tree(quality.formula.full, wine.train, wine.test, e.tree)
+
+####################################################
+#  Visualizing a decision tree
+#  
+
+print(wine.model.small@tree.model)
+print(wine.model.full@tree.model)
+
+jpeg('figs/wine-model-small.jpg', width=800 , height=400)
+ plot(wine.model.small@tree.model)
+dev.off()
+
+jpeg('figs/wine-model-small-simple.jpg', width=800 , height=400)
+ plot(wine.model.small@tree.model, type="simple")
+dev.off()
+
+jpeg('figs/wine-model-full.jpg', width=2400 , height=1200)
+plot(wine.model.full@tree.model)
+dev.off()
+
+jpeg('figs/wine-model-full-simple.jpg', width=2400 , height=1200)
+plot(wine.model.full@tree.model, type="simple")
+dev.off()
+
+
+####################################################
+#  Evaluating a decision tree
+#  
+
+table(wine.model.small@tree.results, wine.train$quality)
+table(wine.model.small@tree.predict, wine.test$quality)
+
+wine.predict = predict(wine.ctree, newdata = wine.test)
+wine.test.table = table(wine.predict, wine.test$quality)
 
 # ind = base::sample(2, nrow(iris)        # sample data set
 #                     , replace=TRUE      # sample with replacement or not

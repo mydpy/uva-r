@@ -108,7 +108,8 @@ colors <- colors[as.numeric(iris$Species)]
 scatterplot3d(  iris[,1:3], pch = 16
               , color=colors                     # apply our colors to the plot
               , grid=TRUE                        # keep the z plane grid
-              , box=FALSE)                       # turn off the box surrounding the plot
+              , box=FALSE                        # turn off the box surrounding the plot
+              , main='GO HOOS')                      
 
 library(lattice)
 levelplot(Petal.Width~Sepal.Length*Sepal.Width   # formula for generating shingles
