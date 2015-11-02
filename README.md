@@ -9,7 +9,7 @@ If you do not have git, you can download the repository as a .zip file from the 
 The following software is recommended to fully enjoy the seminar:
 
 * R version 3.2.0 (or later) (2015-08-14) -- "Fire Safety"
-* RStudio (optional)
+* RStudio (required)
 * Visualization Packages (optional)
 
 
@@ -104,6 +104,7 @@ Packages in library ‘/Library/Frameworks/R.framework/Versions/3.2/Resources/li
 	> install.packages("packrat")
 	> install.packages("tigerstats")
 	> install.packages("party")
+	> install.packages("ROCR")
 
 Select a mirror (a place to download the file from) and you should see log messages dumped to your screen. 
 You can confirm the packages installed correctly by invoking the system library again. 
@@ -114,8 +115,4 @@ You can show more information about a specific package by invoking the help on a
 
 	> library(help = "package_name")
 
-##Run Examples
-
-	cd uva-r 
-	R -i > sample_input
 

@@ -26,7 +26,7 @@ all.equal( csv.wine.quality
 str(raw.wine.quality)             # examine dataset
 summary(raw.wine.quality)
 names(raw.wine.quality)
-class(raw.wine.quality)
+class(raw.wine.quality)           # show the class type 
 
 ####################################################
 #  Partition data into training and test data
@@ -34,7 +34,7 @@ class(raw.wine.quality)
 
 set.seed(1234)                          # set random number generator seed to recreate results
 
-ind = base::sample(2                    # sample data set
+ind = base::sample(2                    # index data set by sampling
                     , nrow(raw.wine.quality)        
                     , replace=TRUE      # sample with replacement or not
                     , prob=c(0.7, 0.3)) # ratio of train/test
@@ -45,28 +45,30 @@ wine.test  = raw.wine.quality[ind==2,]  # create testing  data set
 ####################################################
 #  configure environment
 #  
-e.tree = new.env()
-
+e.tree = new.env()                      # technical note: demonstrates R's powerful  
+                                        # yet complex notion of lexical scoping
+                                        # see: http://adv-r.had.co.nz/Environments.html
 ####################################################
 #  Building a decision tree  
 #  
 
 library(party)
-setClass(Class="BinaryTreeModel",
-         representation(
-           tree.model="BinaryTree",
-           tree.results="factor",
-           tree.formula="formula",
-           tree.predict="factor"
+setClass(Class="BinaryTreeModel",       # creating a class to hold general tree properties
+         representation(       
+           tree.model="BinaryTree",     # formula is object.property.name = "class_type"
+           tree.results="factor",       # use class(object_name) when creating classes
+           tree.formula="formula",      # each tree has a model, results, formula used
+           tree.predict="factor"        # to create the tree, and a prediction
          )
 )
 
 build_tree = function(tree.formula, tree.train, tree.test, env=e){
     .model = party::ctree(tree.formula, data=tree.train)
-    .formula = tree.formula
-    .results = predict(.model, data = tree.train)
-    .predict = predict(.model, newdata = tree.test)
-    return (new( "BinaryTreeModel",
+                                        # pass in the tree formula and the data ?ctree
+    .formula = tree.formula             # write the formula so we can recreate results
+    .results = predict(.model, data = tree.train)   # predict invokes BinaryTree fitting functions
+    .predict = predict(.model, newdata = tree.test) # run for both train and test data
+    return (new( "BinaryTreeModel",     # return the class object of the trees we just modeled
                  tree.model=.model,
                  tree.results=.results,
                  tree.formula=.formula,
@@ -78,32 +80,34 @@ quality.formula.full = quality ~ fixed.acidity + volatile.acidity +
                        free.sulfur.dioxide + total.sulfur.dioxide + 
                        density + pH + sulphates + alcohol
 
-quality.formula.small = quality ~ alcohol
+quality.formula.small = quality ~ alcohol           # compare the full and simple model
 
 wine.model.small <<- build_tree(quality.formula.small, wine.train, wine.test, e.tree)
 wine.model.full <<-  build_tree(quality.formula.full, wine.train, wine.test, e.tree)
+                                        # build a tree for each formula. Pass in the
+                                        # formula, training set, test set, and environment
 
 ####################################################
 #  Visualizing a decision tree
 #  
 
-print(wine.model.small@tree.model)
-print(wine.model.full@tree.model)
+print(wine.model.small@tree.model)      # print the model parameters for small tree
+print(wine.model.full@tree.model)       # print the model parameters for complex tree
 
-jpeg('figs/wine-model-small.jpg', width=800 , height=400)
- plot(wine.model.small@tree.model)
-dev.off()
+jpeg('figs/wine-model-small.jpg', width=800 , height=400)  # save figure to our local machine
+ plot(wine.model.small@tree.model)                         # plot the small tree model
+dev.off()                                                  # tell R we're done modifying the plot
 
 jpeg('figs/wine-model-small-simple.jpg', width=800 , height=400)
- plot(wine.model.small@tree.model, type="simple")
+ plot(wine.model.small@tree.model, type="simple")          # plot the simple small tree model
 dev.off()
 
 jpeg('figs/wine-model-full.jpg', width=2400 , height=1200)
-plot(wine.model.full@tree.model)
+plot(wine.model.full@tree.model)                           # plot the full tree model
 dev.off()
 
 jpeg('figs/wine-model-full-simple.jpg', width=2400 , height=1200)
-plot(wine.model.full@tree.model, type="simple")
+plot(wine.model.full@tree.model, type="simple")            # plot the simple full tree model
 dev.off()
 
 
@@ -111,11 +115,20 @@ dev.off()
 #  Evaluating a decision tree
 #  
 
-table(wine.model.small@tree.results, wine.train$quality)
-table(wine.model.small@tree.predict, wine.test$quality)
+table(wine.model.small@tree.results, wine.train$quality
+                       , leg=c("Predicted", "Actual"))   # print the confusion matrix
+table(wine.model.small@tree.predict, wine.test$quality   # for the results and prediction
+                       , leg=c("Predicted", "Actual"))   # against the actual results
+                                                         # perfect case: main diagonal 
+                                                         # contains all values
 
 wine.predict = predict(wine.ctree, newdata = wine.test)
 wine.test.table = table(wine.predict, wine.test$quality)
+
+                                                         # Decision Tree Metrics
+                                                         # overall accuracy
+                                                         # precision
+                                                         # recall
 
 # ind = base::sample(2, nrow(iris)        # sample data set
 #                     , replace=TRUE      # sample with replacement or not
