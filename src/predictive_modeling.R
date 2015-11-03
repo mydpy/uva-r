@@ -133,9 +133,9 @@ dev.off()
 #  
 
 table(wine.model.small@tree.results, wine.train$quality
-                       , leg=c("Predicted", "Actual"))   # print the confusion matrix
+                       , dnn=c("Predicted", "Actual"))   # print the confusion matrix
 table(wine.model.small@tree.predict, wine.test$quality   # for the results and prediction
-                       , leg=c("Predicted", "Actual"))   # against the actual results
+                       , dnn=c("Predicted", "Actual"))   # against the actual results
                                                          # perfect case: main diagonal 
                                                          # contains all values
 

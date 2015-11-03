@@ -21,8 +21,8 @@ range(x)[1] <= range(x)[2]  # range
 var(cos(x), sin(x))         # sample covariance between a and b
 var(sin(x),cos(x))==cov(cos(x),sin(x))
 cor(cos(x), sin(x))         # sample correlation between a and b
-cor(-1:0, 0:1)
-cor(0:-1, 0:1)
+cor(-1:0, 0:1)              # correlation between two vectors
+cor(0:-1, 0:1)              # plot(0:-1, 0:1) to visually see the two points
 
 sort(x, decreasing = TRUE)   # sort into descending order
 
@@ -64,7 +64,7 @@ pet.genie <- function(null){      # no arguments
     return ('gerbil')             # else
 }
 
-pets = lapply(1:100, pet.genie)   # applies function pet.genie to 
+pets = lapply(1:100, pet.genie)   # applies function pet.genie to a vector of 1:100
                                   # each element in 1:100 vector -> list
 str(pets)                         # uh-oh - a list of 100 elements!
 pets.v = unlist(pets)             # convert the list into a vector

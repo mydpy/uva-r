@@ -96,8 +96,8 @@ universities                        # display university data from collegescorec
 nrow(universities)                  # number of universities
 ncol(universities)                  # number of variables 
 head(universities, n=2)             # display header
-str(universities)                   # display structure of d
-summary(universities)               # display summary of d
+str(universities)                   # display structure of universities
+summary(universities)               # display summary of universities
 universities[1, 1]                  # print universities
 universities[2, ]                   # print UVA data
 universities[[3]]                   # print cities 
@@ -105,6 +105,6 @@ universities[["city"]]              # print cities
 universities[ , 3]                  # print cities
 universities$city                   # print cities
 
-mean(c(universities[2, "graduation.rate"],d[1, "graduation.rate"]))
+mean(c(universities[2, "graduation.rate"],universities[1, "graduation.rate"]))
 universities[universities$state == "VA", ]    
 

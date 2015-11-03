@@ -14,7 +14,7 @@ x = 4; y = 2            # the semi-colon separates the two commands
 x + y                   # sum
 x * y                   # product
 ls()                    # display object names 
+captech.is.cool = TRUE  # meaningful object name using periods 
 rm(x)                   # remove (unassign) x
 rm(list = ls())         # remove all objects in current session
-captech.is.cool = TRUE  # meaningful object name using periods 
 q()                     # quit R

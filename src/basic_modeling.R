@@ -105,8 +105,9 @@ scatterplot3d(  iris[,1:3]                       # select certain frames of the 
 
 colors <- c("navy", "chocolate2", "snow1")       # define a color set
 colors <- colors[as.numeric(iris$Species)]
-scatterplot3d(  iris[,1:3], pch = 16
-              , color=colors                     # apply our colors to the plot
+scatterplot3d(  iris[,1:3], pch = 21
+              , color="black"                    # give the points a black outline
+              , bg=colors                        # apply our colors to the plot
               , grid=TRUE                        # keep the z plane grid
               , box=FALSE                        # turn off the box surrounding the plot
               , main='GO HOOS')                      
@@ -115,7 +116,8 @@ library(lattice)
 levelplot(Petal.Width~Sepal.Length*Sepal.Width   # formula for generating shingles
           , iris
           , cuts=2                               # devide z into 2 levels
-          , col.regions=colors)
+          , col.regions=colors
+          )
 
 library(MASS) 
 parcoord(iris[1:4], col=iris$Species)            # parallel coordinates plot
