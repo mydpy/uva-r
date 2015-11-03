@@ -43,16 +43,38 @@ wine.train = raw.wine.quality[ind==1,]  # create training data set
 wine.test  = raw.wine.quality[ind==2,]  # create testing  data set
 
 ####################################################
+#  Define forumlas for our tree(s)
+#   
+
+quality.formula.full = quality ~ fixed.acidity + volatile.acidity + 
+  citric.acid + residual.sugar + chlorides + 
+  free.sulfur.dioxide + total.sulfur.dioxide + 
+  density + pH + sulphates + alcohol
+
+quality.formula.small = quality ~ alcohol           # compare the full and simple model
+
+####################################################
 #  configure environment
 #  
+rm(e.tree)
 e.tree = new.env()                      # technical note: demonstrates R's powerful  
                                         # yet complex notion of lexical scoping
                                         # see: http://adv-r.had.co.nz/Environments.html
 ####################################################
-#  Building a decision tree  
+#  Building a decision tree with conditional inference
 #  
 
 library(party)
+
+# Conditional inference trees estimate a regression relationship by binary recursive partitioning 
+# in a conditional inference framework. Roughly, the algorithm works as follows: 1) Test the global
+# null hypothesis of independence between any of the input variables and the response 
+# (which may be multivariate as well). Stop if this hypothesis cannot be rejected. 
+# Otherwise select the input variable with strongest association to the resonse. 
+# This association is measured by a p-value corresponding to a test for the partial null 
+# hypothesis of a single input variable and the response. 2) Implement a binary split in the 
+# selected input variable. 3) Recursively repeate steps 1) and 2).
+
 setClass(Class="BinaryTreeModel",       # creating a class to hold general tree properties
          representation(       
            tree.model="BinaryTree",     # formula is object.property.name = "class_type"
@@ -75,12 +97,7 @@ build_tree = function(tree.formula, tree.train, tree.test, env=e){
                  tree.predict=.predict))
 }
 
-quality.formula.full = quality ~ fixed.acidity + volatile.acidity + 
-                       citric.acid + residual.sugar + chlorides + 
-                       free.sulfur.dioxide + total.sulfur.dioxide + 
-                       density + pH + sulphates + alcohol
 
-quality.formula.small = quality ~ alcohol           # compare the full and simple model
 
 wine.model.small <<- build_tree(quality.formula.small, wine.train, wine.test, e.tree)
 wine.model.full <<-  build_tree(quality.formula.full, wine.train, wine.test, e.tree)
@@ -122,78 +139,79 @@ table(wine.model.small@tree.predict, wine.test$quality   # for the results and p
                                                          # perfect case: main diagonal 
                                                          # contains all values
 
-wine.predict = predict(wine.ctree, newdata = wine.test)
-wine.test.table = table(wine.predict, wine.test$quality)
+tree_accuracy = function(prediction, actual){            # write a function
+  return(sum(actual==prediction)/length(prediction))     # for the tree accuracy metric
+}
 
-                                                         # Decision Tree Metrics
-                                                         # overall accuracy
-                                                         # precision
-                                                         # recall
+tree_accuracy(wine.model.small@tree.results,wine.train$quality)  # accuracy for training of small tree
+tree_accuracy(wine.model.small@tree.predict,wine.test$quality)   # accuracy for testing of small tree
 
-# ind = base::sample(2, nrow(iris)        # sample data set
-#                     , replace=TRUE      # sample with replacement or not
-#                     , prob=c(0.7, 0.3)) # ratio of train/test
-# trainData <- iris[ind==1,]
-# testData <- iris[ind==2,]
-# 
-# library(party)
-# myFormula <- Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width
-# iris_ctree <- ctree(myFormula, data=trainData)
-# table(predict(iris_ctree), trainData$Species)
-# print(iris_ctree)
-# plot(iris_ctree)
-# plot(iris_ctree, type="simple")
-# 
-# testPred <- predict(iris_ctree, newdata = testData)
-# table(testPred, testData$Species)
-# 
-# #using RPart
-# set.seed(1234)
-# ind <- sample(2, nrow(bodyfat), replace=TRUE, prob=c(0.7, 0.3))
-# bodyfat.train <- bodyfat[ind==1,]
-# bodyfat.test <- bodyfat[ind==2,]
-# # train a decision tree 
-# library(rpart)
-# myFormula <- DEXfat ~ age + waistcirc + hipcirc + elbowbreadth + kneebreadth
-# bodyfat_rpart <- rpart(myFormula, data = bodyfat.train,control = rpart.control(minsplit = 10))
-# attributes(bodyfat_rpart)
-# print(bodyfat_rpart$cptable)
-# print(bodyfat_rpart)
-# plot(bodyfat_rpart)
-# text(bodyfat_rpart, use.n=T)
-# opt <- which.min(bodyfat_rpart$cptable[,"xerror"])
-# cp <- bodyfat_rpart$cptable[opt, "CP"]
-# bodyfat_prune <- prune(bodyfat_rpart, cp = cp)
-# print(bodyfat_prune)
-# plot(bodyfat_prune)
-# text(bodyfat_prune, use.n=T)
-# 
-# DEXfat_pred <- predict(bodyfat_prune, newdata=bodyfat.test)
-# xlim <- range(bodyfat$DEXfat)
-# plot(DEXfat_pred ~ DEXfat, data=bodyfat.test, xlab="Observed", ylab="Predicted", ylim=xlim, xlim=xlim)
-# abline(a=0, b=1)
-# 
-# 
-# #  Section Name 
-# #
-# #  Topic 1
-# #      Information
-# #   
-# 
-# ind <- sample(2, nrow(iris), replace=TRUE, prob=c(0.7, 0.3))
-# trainData <- iris[ind==1,]
-# testData <- iris[ind==2,]
-# library(randomForest)
-# rf <- randomForest(Species ~ ., data=trainData, ntree=100, proximity=TRUE)
-# table(predict(rf), trainData$Species)
-# print(rf)
-# attributes(rf)
-# plot(rf)
-# importance(rf)
-# varImpPlot(rf)
-# irisPred <- predict(rf, newdata=testData)
-# table(irisPred, testData$Species)
-# plot(margin(rf, testData$Species))
+tree_accuracy(wine.model.full@tree.results,wine.train$quality)   # accuracy for training of full tree
+tree_accuracy(wine.model.full@tree.predict,wine.test$quality)    # accuracy for testing of full tree
+
+####################################################
+#  Building and pruning a Decision Tree using RPart
+#  
+
+library(rpart)
+
+wine.full.rpart = rpart(quality.formula.full,                    # Fit an rpart model to the formula
+                         data = wine.train,                      # which data to use
+                         control = rpart.control(minsplit = 50)) # configuration parameters. minsplit is the number 
+# of observations that must exist in a node in order 
+# for a split to be attempted.
+# See ?rpart.control 
+
+print(wine.full.rpart)                                           # print the levels of the tree
+attributes(wine.full.rpart)                                      # attributes of the tree model created by rpart
+print(wine.full.rpart$cptable)                                   # a matrix of information on the optimal prunings based on a complexity parameter.
+plot(wine.full.rpart)                                            # plot the tree  
+text(wine.full.rpart, use.n=T)                                   # add text (this method is low-level and fuzzy)
+
+opt <- which.min(wine.full.rpart$cptable[,"xerror"])             # returns the index of minimum element                      
+cp <- wine.full.rpart$cptable[opt, "CP"]                         # returns the complexity parameter for minimum index (to prune)         
+wine.full.rpart.prune <- prune(wine.full.rpart, cp = cp)         # find a nested sequence of subtrees by recursively snipping off the least important splits based on (cp).                
+print(wine.full.rpart.prune)                                     
+plot(wine.full.rpart.prune)                                      
+text(wine.full.rpart.prune, use.n=T)                                  
+wine.full.rpart.prune.predict <- 
+         predict(wine.full.rpart.prune, newdata=wine.test)       # calculate predictions on the pruned tree  
+wine.full.rpart.predict <- 
+  predict(wine.full.rpart, newdata=wine.test)                    # calculate predictions on the pruned tree     
+table(wine.full.rpart.predict[,1],wine.test$quality)             # display the prediction results by cp
+table(wine.full.rpart.prune.predict[,1],wine.test$quality)     
+
+####################################################
+#  Random-forest models using RandomForest
+#    randomly assigned a bootstrapped sample of the training
+#    data to multiple trees, and determine summary statistics
+#    for the 'forest' you create -> ensemble classifier. 
+
+library(randomForest)
+
+# randomForest implements Breiman's random forest algorithm 
+# for classification and regression.
+
+
+wine.full.rf <<- randomForest(quality.formula.full,    # formula to use when creating trees   
+                              data=wine.train,         # pass it the training data
+                              ntree=100,               # size of the forest
+                              proximity=TRUE)          # include row proximity in cp metrics
+
+print(wine.full.rf)                                    # show the forest
+attributes(wine.full.rf)                               # show the forest object attributes
+table(predict(wine.full.rf), wine.train$quality)       # confusion matrix for the full forest with training data
+
+plot(wine.full.rf)                                     # plot the error by tree in forest
+
+importance(wine.full.rf)                               # display the importance of each facet (Gini impurity score)
+varImpPlot(wine.full.rf)                               # plot the importance matrix
+
+
+wine.full.rf.predict <- predict(wine.full.rf,          # predict using the forest on the test data
+                                newdata=wine.test)
+table(wine.full.rf.predict, wine.test$quality)         # display the results
+plot(margin(wine.full.rf, wine.test$quality))          # plot the error margin for the prediction results
 
 
 
