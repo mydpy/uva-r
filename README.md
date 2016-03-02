@@ -41,7 +41,7 @@ Install using your built-in package manager (apt-get, yum, zypper, etc.)
 ###Windows 
 #####Base-R
 
-* Download the 32/64-bit .exe installer from CRAN [here](http://cran.us.r-project.org/bin/windows/base/R-3.2.2-win.exe)
+* Download the 32/64-bit .exe installer from CRAN [here](http://cran.us.r-project.org/bin/windows/base/)
 * Run the .exe installer
 
 #####RStudio 
